@@ -4,64 +4,44 @@
 <meta charset="UTF-8">
 <title>Thi Online</title>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  background: #f5f6fa;
+  background: linear-gradient(135deg, #74b9ff, #a29bfe);
 }
 
 .container {
   padding: 20px;
 }
 
-/* HEADER */
 .header {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
+  color: white;
 }
 
-/* MAIN */
 .main {
   display: flex;
   gap: 20px;
 }
 
-/* LEFT */
+.left, .right {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
 .left {
   flex: 2;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
 }
 
-.timer-box {
-  font-size: 28px;
-  margin: 20px 0;
-  color: red;
-}
-
-button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #0984e3;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #0652dd;
-}
-
-/* RIGHT */
 .right {
   flex: 1;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
   text-align: center;
 }
 
@@ -70,13 +50,37 @@ video {
   border-radius: 10px;
 }
 
-/* WARNING */
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #00b894;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #00a383;
+}
+
+.timer {
+  font-size: 28px;
+  color: red;
+  margin: 20px 0;
+}
+
 .warning {
   margin-top: 20px;
   padding: 15px;
   background: #ffeaa7;
   border-radius: 10px;
   text-align: center;
+}
+
+#status {
+  color: red;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -85,81 +89,66 @@ video {
 
 <div class="container">
 
-  <div class="header">📄 Bài làm</div>
+  <div class="header">
+    📝 Bài thi siêu cấp đáng yêu 😎
+  </div>
 
   <div class="main">
 
-    <!-- LEFT -->
     <div class="left">
-      <button onclick="startExam()">Bắt đầu làm bài</button>
+      <button onclick="startExam()">
+        <i class="fa-solid fa-play"></i> Bắt đầu làm bài
+      </button>
 
-      <div class="timer-box">
-        ⏱ Thời gian: <span id="timer">05:00</span>
+      <div class="timer">
+        ⏰ <span id="timer">50:00</span>
       </div>
 
-      <button onclick="submitExam()">Nộp bài</button>
+      <div id="status"></div>
+
+      <button onclick="submitExam()">
+        <i class="fa-solid fa-paper-plane"></i> Nộp bài
+      </button>
     </div>
 
-    <!-- RIGHT -->
     <div class="right">
-      <h3>🎥 Camera</h3>
+      <h3><i class="fa-solid fa-camera"></i> Camera 😎</h3>
       <video id="video" autoplay muted></video>
     </div>
 
   </div>
 
   <div class="warning">
-    ⚠️ Không rời khỏi màn hình trong quá trình làm bài
+    🚨 Camera đang nhìn bạn đó 👀 Đừng gian lận nha!
   </div>
 
 </div>
 
 <script>
-let mediaRecorder;
-let chunks = [];
-let time = 300; // 5 phút
+let stream;
+let time = 3000; // 50 phút
 let timerInterval;
+let captureInterval;
 
-// 🎥 Bắt đầu thi
+// 🎥 start
 async function startExam() {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: true
   });
 
   document.getElementById("video").srcObject = stream;
 
-  mediaRecorder = new MediaRecorder(stream);
-
-  mediaRecorder.ondataavailable = e => {
-    chunks.push(e.data);
-  };
-
-  mediaRecorder.onstop = async () => {
-    const blob = new Blob(chunks, { type: "video/webm" });
-
-    const formData = new FormData();
-    formData.append("file", blob, "record.webm");
-
-    await fetch("https://thi-online.onrender.com/upload", {
-      method: "POST",
-      body: formData
-    });
-
-    alert("Đã nộp bài!");
-  };
-
-  mediaRecorder.start();
+  document.getElementById("status").innerText = "🔴 Đang ghi hình (timelapse)...";
 
   startTimer();
+  startCapture();
 }
 
-// ⏱ Timer
+// ⏱ timer
 function startTimer() {
   timerInterval = setInterval(() => {
     if (time <= 0) {
-      clearInterval(timerInterval);
-      submitExam(); // tự nộp
+      submitExam();
       return;
     }
 
@@ -173,19 +162,47 @@ function startTimer() {
   }, 1000);
 }
 
-// 📤 Nộp bài
-function submitExam() {
-  clearInterval(timerInterval);
+// 📸 chụp mỗi 5s
+function startCapture() {
+  const video = document.getElementById("video");
 
-  if (mediaRecorder && mediaRecorder.state !== "inactive") {
-    mediaRecorder.stop();
-  }
+  captureInterval = setInterval(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(async (blob) => {
+      const formData = new FormData();
+      formData.append("file", blob, "frame.jpg");
+
+      await fetch("https://thi-online.onrender.com/upload", {
+        method: "POST",
+        body: formData
+      });
+    }, "image/jpeg", 0.6);
+
+  }, 5000); // 5 giây
 }
 
-// 🚫 Rời tab cảnh báo
+// 📤 submit
+function submitExam() {
+  clearInterval(timerInterval);
+  clearInterval(captureInterval);
+
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+
+  alert("Đã nộp bài!");
+}
+
+// 🚫 rời tab
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    alert("Bạn vừa rời khỏi tab!");
+    alert("Bạn vừa rời tab!");
   }
 });
 </script>
