@@ -37,7 +37,7 @@ async function startExam() {
     const formData = new FormData();
     formData.append("file", blob, "record.webm");
 
-    await fetch("http://localhost:3000/upload", {
+    await fetch("https://thi-online.onrender.com/upload", {
       method: "POST",
       body: formData
     });
