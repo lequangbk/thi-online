@@ -181,7 +181,7 @@ canvas.toBlob((blob) => {
   reader.onloadend = async () => {
     const base64 = reader.result.split(",")[1];
 
-    await fetch("https://script.google.com/macros/s/AKfycbz98sg7Irny1hQeA2-GGjHm8q8XcBlPRvyoh5Ii1yBEZCspLrKoea0aeg2vT5ejNzc/exec", {
+    await fetch("https://script.google.com/macros/s/AKfycbyNFdxASopkA0YGfwgxjx2iYu5rlcl3JhAon-ZIZyj5n3ohCCx8LrhWIvmVWxm9C3w/exec", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
