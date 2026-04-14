@@ -1,25 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
+  <meta charset="UTF-8">
   <title>Thi Online</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f5f6fa;
+    }
+
+    header {
+      background: #2f3640;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .container {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .left {
+      flex: 2;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .right {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .question {
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #e84118;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #c23616;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Làm bài thi</h2>
+<header>
+  <div>📝 Bài thi trắc nghiệm</div>
+  <div>⏱ Thời gian: <span id="timer">10:00</span></div>
+</header>
 
-<video id="video" autoplay width="300"></video>
-<br><br>
+<div class="container">
 
-<button onclick="startExam()">Bắt đầu</button>
-<button onclick="submitExam()">Nộp bài</button>
+  <!-- LEFT -->
+  <div class="left">
+    <div class="question">
+      <p><b>Câu 1:</b> 2 + 2 = ?</p>
+      <label><input type="radio" name="q1"> 3</label><br>
+      <label><input type="radio" name="q1"> 4</label><br>
+      <label><input type="radio" name="q1"> 5</label>
+    </div>
+
+    <div class="question">
+      <p><b>Câu 2:</b> Thủ đô Việt Nam?</p>
+      <label><input type="radio" name="q2"> Hà Nội</label><br>
+      <label><input type="radio" name="q2"> TP.HCM</label><br>
+      <label><input type="radio" name="q2"> Đà Nẵng</label>
+    </div>
+
+    <button onclick="submitExam()">Nộp bài</button>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <h3>Camera giám sát</h3>
+    <video id="video" autoplay></video>
+    <br><br>
+    <button onclick="startExam()">Bắt đầu thi</button>
+  </div>
+
+</div>
 
 <script>
 let mediaRecorder;
 let chunks = [];
 
+// 🎥 start camera
 async function startExam() {
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 640, height: 480 },
+    video: true,
     audio: true
   });
 
@@ -37,20 +126,34 @@ async function startExam() {
     const formData = new FormData();
     formData.append("file", blob, "record.webm");
 
-    await fetch("https://thi-online.onrender.com", {
+    await fetch("https://thi-online.onrender.com/upload", {
       method: "POST",
       body: formData
     });
 
-    alert("Đã nộp bài + upload video!");
+    alert("Đã nộp bài!");
   };
 
   mediaRecorder.start();
 }
 
+// 📤 submit
 function submitExam() {
   mediaRecorder.stop();
 }
+
+// ⏱ timer
+let time = 600;
+setInterval(() => {
+  if (time <= 0) return;
+  time--;
+
+  let min = Math.floor(time / 60);
+  let sec = time % 60;
+
+  document.getElementById("timer").innerText =
+    `${min}:${sec < 10 ? "0" : ""}${sec}`;
+}, 1000);
 </script>
 
 </body>
