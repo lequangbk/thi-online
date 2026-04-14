@@ -194,16 +194,16 @@ function startCapture() {
 
         console.log("Đang gửi ảnh...");
 
-       await fetch("https://script.google.com/macros/s/AKfycby-nadittHWpRyARHoPVD9IB313YXbxvmmKLmQrW5QYNx4zi_VeE_fpdGcM4w7eB1w/exec", {
-  method: "POST",
-  mode: "no-cors",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    data: base64
-  })
+      const data = JSON.stringify({
+  data: base64
 });
+
+const blobData = new Blob([data], { type: "application/json" });
+
+navigator.sendBeacon(
+  "https://script.google.com/macros/s/AKfycby-nadittHWpRyARHoPVD9IB313YXbxvmmKLmQrW5QYNx4zi_VeE_fpdGcM4w7eB1w/exec",
+  blobData
+);
 
         console.log("Đã gửi!");
       };
