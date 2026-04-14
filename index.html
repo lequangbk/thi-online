@@ -1,102 +1,115 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Thi Online</title>
-  <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      background: #f5f6fa;
-    }
+<meta charset="UTF-8">
+<title>Thi Online</title>
 
-    header {
-      background: #2f3640;
-      color: white;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f5f6fa;
+}
 
-    .container {
-      display: flex;
-      padding: 20px;
-      gap: 20px;
-    }
+.container {
+  padding: 20px;
+}
 
-    .left {
-      flex: 2;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-    }
+/* HEADER */
+.header {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 
-    .right {
-      flex: 1;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-    }
+/* MAIN */
+.main {
+  display: flex;
+  gap: 20px;
+}
 
-    video {
-      width: 100%;
-      border-radius: 10px;
-    }
+/* LEFT */
+.left {
+  flex: 2;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
 
-    .question {
-      margin-bottom: 20px;
-    }
+.timer-box {
+  font-size: 28px;
+  margin: 20px 0;
+  color: red;
+}
 
-    button {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #e84118;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #0984e3;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
 
-    button:hover {
-      background: #c23616;
-    }
-  </style>
+button:hover {
+  background: #0652dd;
+}
+
+/* RIGHT */
+.right {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+video {
+  width: 100%;
+  border-radius: 10px;
+}
+
+/* WARNING */
+.warning {
+  margin-top: 20px;
+  padding: 15px;
+  background: #ffeaa7;
+  border-radius: 10px;
+  text-align: center;
+}
+</style>
 </head>
-<body>
 
-<header>
-  <div>📝 Bài thi trắc nghiệm</div>
-  <div>⏱ Thời gian: <span id="timer">10:00</span></div>
-</header>
+<body>
 
 <div class="container">
 
-  <!-- LEFT -->
-  <div class="left">
-    <div class="question">
-      <p><b>Câu 1:</b> 2 + 2 = ?</p>
-      <label><input type="radio" name="q1"> 3</label><br>
-      <label><input type="radio" name="q1"> 4</label><br>
-      <label><input type="radio" name="q1"> 5</label>
+  <div class="header">📄 Bài làm</div>
+
+  <div class="main">
+
+    <!-- LEFT -->
+    <div class="left">
+      <button onclick="startExam()">Bắt đầu làm bài</button>
+
+      <div class="timer-box">
+        ⏱ Thời gian: <span id="timer">05:00</span>
+      </div>
+
+      <button onclick="submitExam()">Nộp bài</button>
     </div>
 
-    <div class="question">
-      <p><b>Câu 2:</b> Thủ đô Việt Nam?</p>
-      <label><input type="radio" name="q2"> Hà Nội</label><br>
-      <label><input type="radio" name="q2"> TP.HCM</label><br>
-      <label><input type="radio" name="q2"> Đà Nẵng</label>
+    <!-- RIGHT -->
+    <div class="right">
+      <h3>🎥 Camera</h3>
+      <video id="video" autoplay muted></video>
     </div>
 
-    <button onclick="submitExam()">Nộp bài</button>
   </div>
 
-  <!-- RIGHT -->
-  <div class="right">
-    <h3>Camera giám sát</h3>
-    <video id="video" autoplay></video>
-    <br><br>
-    <button onclick="startExam()">Bắt đầu thi</button>
+  <div class="warning">
+    ⚠️ Không rời khỏi màn hình trong quá trình làm bài
   </div>
 
 </div>
@@ -104,8 +117,10 @@
 <script>
 let mediaRecorder;
 let chunks = [];
+let time = 300; // 5 phút
+let timerInterval;
 
-// 🎥 start camera
+// 🎥 Bắt đầu thi
 async function startExam() {
   const stream = await navigator.mediaDevices.getUserMedia({
     video: true,
@@ -135,25 +150,44 @@ async function startExam() {
   };
 
   mediaRecorder.start();
+
+  startTimer();
 }
 
-// 📤 submit
+// ⏱ Timer
+function startTimer() {
+  timerInterval = setInterval(() => {
+    if (time <= 0) {
+      clearInterval(timerInterval);
+      submitExam(); // tự nộp
+      return;
+    }
+
+    time--;
+
+    let min = Math.floor(time / 60);
+    let sec = time % 60;
+
+    document.getElementById("timer").innerText =
+      `${min}:${sec < 10 ? "0" : ""}${sec}`;
+  }, 1000);
+}
+
+// 📤 Nộp bài
 function submitExam() {
-  mediaRecorder.stop();
+  clearInterval(timerInterval);
+
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
 }
 
-// ⏱ timer
-let time = 600;
-setInterval(() => {
-  if (time <= 0) return;
-  time--;
-
-  let min = Math.floor(time / 60);
-  let sec = time % 60;
-
-  document.getElementById("timer").innerText =
-    `${min}:${sec < 10 ? "0" : ""}${sec}`;
-}, 1000);
+// 🚫 Rời tab cảnh báo
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    alert("Bạn vừa rời khỏi tab!");
+  }
+});
 </script>
 
 </body>
