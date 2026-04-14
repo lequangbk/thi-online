@@ -196,6 +196,7 @@ function startCapture() {
 
         await fetch("https://script.google.com/macros/s/AKfycbxhFBZJ_xKMN0_7riDi3j-TSRhxIVJLdukuINvqD8EN8McdX8veGiYRe8TZPAINMAU/exec", {
           method: "POST",
+          mode: "no-cors",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"
           },
