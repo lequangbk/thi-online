@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Thi Online</title>
+</head>
+<body>
+
+<h2>Làm bài thi</h2>
+
+<video id="video" autoplay width="300"></video>
+<br><br>
+
+<button onclick="startExam()">Bắt đầu</button>
+<button onclick="submitExam()">Nộp bài</button>
+
+<script>
+let mediaRecorder;
+let chunks = [];
+
+async function startExam() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 640, height: 480 },
+    audio: true
+  });
+
+  document.getElementById("video").srcObject = stream;
+
+  mediaRecorder = new MediaRecorder(stream);
+
+  mediaRecorder.ondataavailable = e => {
+    chunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+
+    const formData = new FormData();
+    formData.append("file", blob, "record.webm");
+
+    await fetch("http://localhost:3000/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    alert("Đã nộp bài + upload video!");
+  };
+
+  mediaRecorder.start();
+}
+
+function submitExam() {
+  mediaRecorder.stop();
+}
+</script>
+
+</body>
+</html>
