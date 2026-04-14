@@ -174,15 +174,25 @@ function startCapture() {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    canvas.toBlob(async (blob) => {
-      const formData = new FormData();
-      formData.append("file", blob, "frame.jpg");
+canvas.toBlob((blob) => {
 
-      await fetch("https://thi-online.onrender.com/upload", {
-        method: "POST",
-        body: formData
-      });
-    }, "image/jpeg", 0.6);
+  const reader = new FileReader();
+
+  reader.onloadend = async () => {
+    const base64 = reader.result.split(",")[1];
+
+    await fetch("https://script.google.com/macros/s/AKfycbz98sg7Irny1hQeA2-GGjHm8q8XcBlPRvyoh5Ii1yBEZCspLrKoea0aeg2vT5ejNzc/exec", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: "data=" + base64
+    });
+  };
+
+  reader.readAsDataURL(blob);
+
+}, "image/jpeg", 0.6);
 
   }, 5000); // 5 giây
 }
